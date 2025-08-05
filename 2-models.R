@@ -3,27 +3,15 @@
 setwd("E:/Spatial Analysis")
 
 # library(rphylopic)
-library(terra)Hab
-library(predicts)
+library(terra)
 library(dplyr)
-library(readr)
 library(tidyverse)
-library(Hmisc)
-library(lme4)
-library(MuMIn)
-library(car)
-library(pROC)
 library(ggplot2)
 library(stringr)
 library(gridExtra)
-library(MASS)
 library(conflicted)
-library(classInt)
-library(caret)
-library(spdep)
 library(DHARMa)
 library(spaMM)
-library(blockCV)
 
 # Load and scale data
 df <- read.csv("250717_all_datasets.csv")
@@ -106,10 +94,6 @@ final.data <- distinct(final.data, x, y, .keep_all = TRUE)
 final.data <- na.omit(final.data)
 
 ### Modelling
-# Find interactions
-int <- lm(as.numeric(att) ~ (ed + mesh + tri + bio4 + bio17 + bio18 + c.cover + hfp + popdens + gdp + dist_forest + dist_cropland + dist_fp + dist_pa)^2, data = final.data)
-anova(int) # try ed:c.cover
-
 # Parallel processing
 nthr <- parallel::detectCores(logical = FALSE) - 1L
 
@@ -119,18 +103,14 @@ frag.m.w <- fitme(att ~ ed + mesh + Matern(1|y+x),
                 data = final.data,
                 family = binomial(link = "logit"),
                 weights.form = ~weights,
-                control.HLfit = list(NbThreads = max(nthr, 2L)))
-summary(frag.m)
-saveRDS(frag.m, "D:/Naufal/Elephant Attacks/Models/frag.m.rds")
+                control.HLfit = list(NbThreads = max(nthr, 1L)))
 
 # Habitat and natural resources model
 hbr.m.w <- fitme(att ~ wetness + Matern(1|y+x),
                 data = final.data,
                 family = binomial(link = "logit"),
                 weights.form = ~weights,
-                control.HLfit = list(NbThreads = max(nthr, 2L)))
-summary(hbr.m)
-saveRDS(hbr.m, "D:/Naufal/Elephant Attacks/Models/hbr.m.rds")
+                control.HLfit = list(NbThreads = max(nthr, 1L)))
 
 # Socioeconomic model
 soc.m.w <- fitme(att ~ popdens + gdp + Matern(1|y+x),
@@ -138,8 +118,6 @@ soc.m.w <- fitme(att ~ popdens + gdp + Matern(1|y+x),
                family = binomial(link = "logit"),
                weights.form = ~weights,
                control.HLfit = list(NbThreads = max(nthr, 1L)))
-summary(soc.m)
-saveRDS(soc.m, "D:/Naufal/Elephant Attacks/Models/soc.m.rds")
 
 # Potential HEC model
 hec.m.w <- fitme(att ~ dist_pa + dist_forest + dist_cropland + dist_fp + Matern(1|y+x),
@@ -166,10 +144,15 @@ hec_quad.m.w <- fitme(att ~ dist_pa + dist_forest + dist_cropland + dist_fp + I(
 null.w <- fitme(att ~ 1 + Matern(1|y+x),
               data = final.data,
               family = binomial(link = "logit"),
-              weights.form = ~weights,  t5
+              weights.form = ~weights,
               control.HLfit = list(NbThreads = max(nthr, 1L)))
 
 # Topography model
+topo.m <- fitme(att ~ tri + Matern(1|y+x),
+                data = final.data,
+                family = binomial(link = "logit"),
+                weights.form = ~weights,
+                control.HLfit = list(NbThreads = max(nthr, 1L)))
 
 # Full model without quadratic terms
 f1.m.w <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_forest + dist_cropland + dist_fp + dist_pa + Matern(1|y+x), 
@@ -177,7 +160,6 @@ f1.m.w <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_for
             family = binomial(link = "logit"),
             weights.form = ~weights,
             control.HLfit = list(NbThreads = max(nthr, 1L)))
-summary(f1.m)
 
 # Full model with quadratic terms
 f2.m_wetness <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_forest + dist_cropland + dist_fp + dist_pa + I(wetness^2) + I(dist_forest^2)
@@ -186,7 +168,6 @@ f2.m_wetness <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + di
                       family = binomial(link = "logit"),   
                       weights.form = ~weights,
                       control.HLfit = list(NbThreads = max(nthr, 1L)))
-saveRDS(f2.m_wetness, "D:/Naufal/Elephant Attacks/Models/sets 3/f2.m_wetness.rds")
 
 # Model without SAC
 f3.no_sac <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_forest + dist_cropland + dist_fp + dist_pa + I(wetness^2) + I(dist_forest^2)
@@ -194,5 +175,3 @@ f3.no_sac <- fitme(att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_
               data = final.data,
               family = binomial(link = "logit"),   
               weights.form = ~weights)
-summary(f3.no_sac)
-AIC(f3.no_sac)
