@@ -160,7 +160,7 @@ odds.df
 odds.plot <- 
   ggplot(data = odds.df,
          aes(x = odds,
-             y = reorder(rownames(odds.df), yAxis))) +  # Reorder for better visualization
+             y = reorder(rownames(odds.df), yAxis))) +
   geom_vline(
     aes(xintercept = 1),
     linewidth = 1,
@@ -172,17 +172,17 @@ odds.plot <-
     height = .4,
     color = 'gray50') +
   geom_point(size = 3.5) +
-  coord_cartesian(xlim = c(0, 3)) + # Consistent scale
+  coord_cartesian(xlim = c(0, 3)) +
   scale_x_continuous(breaks = seq(0, 3, 0.5)) +
-  facet_wrap(~ variable_set, scales = "free_y", ncol = 1) +  # Facet by variable set
+  facet_wrap(~ variable_set, scales = "free_y", ncol = 1) + 
   theme_bw() +
   theme(
     panel.grid.minor = element_blank(),
-    strip.text = element_text(size = 28, face="bold", hjust = 0), # Facet label formatting
+    strip.text = element_text(size = 28, face="bold", hjust = 0), 
     axis.text.x = element_text(size = 25),
-    axis.text.y = element_text(size = 22, hjust = 1), # Adjusted size and alignment
+    axis.text.y = element_text(size = 22, hjust = 1), 
     axis.title.x = element_text(size = 28),
-    panel.spacing = unit(1, "lines") # Add spacing between facets
+    panel.spacing = unit(1, "lines") 
   ) +
   ylab('') +
   xlab('Odds Ratios')
