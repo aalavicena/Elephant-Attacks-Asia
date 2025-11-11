@@ -1,2 +1,2 @@
-# Drivers and Outlook of Elephant-caused Human Casualties in Tropical Asia
-This repository contains codes required to replicate Avicena et al.'s "Drivers and Outlook of Elephant-caused Human Casualties in Tropical Asia".
+# Mapping elephant-caused human-casualty risks in Tropical Asia, 2015-2050
+Supplementary repository to the paper. In Progress.
