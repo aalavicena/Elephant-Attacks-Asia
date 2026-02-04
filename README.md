@@ -1,4 +1,4 @@
-# Elephant-Attacks-Asia
+# Rising risk of elephant-caused human casualties in Tropical Asia (under review)
 
 Supplementary code for **Avicena et al.**, *Rising risk of elephant-caused human casualties in Tropical Asia*. Currently under review in *Communications Sustainability*.
 
