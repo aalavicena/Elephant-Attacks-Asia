@@ -1,57 +1,62 @@
-## Model Selection and Inference
-setwd("E:/Spatial Analysis/_Supplementary Codebase")
+# =============================================================================
+# 3. Model selection and inference
+# AIC comparison, DHARMa checks, SAC correlogram, odds ratios, effect plots.
+# Run after 2-models.R; loads saved model objects and final_data.rds.
+# =============================================================================
+
+BASE_PATH <- "E:/Spatial Analysis"
+PATH_MODELS <- file.path(BASE_PATH, "_Models")
+PATH_PLOTS  <- file.path(BASE_PATH, "_Plots")
+dir.create(PATH_PLOTS, recursive = TRUE, showWarnings = FALSE)
 
 library(DHARMa)
 library(spaMM)
 library(dplyr)
 library(ggplot2)
+library(pgirmess)
 
-f2.m <- readRDS("_Models/sets 3/f2.m_wetness.rds")
-f2.m.no_quad <- readRDS("_Models/sets 2/f2.wetness_noquad.rds")
-extractAIC(f2.m)
-extractAIC(f2.m.no_quad)
-simulateResiduals(f2.m.no_quad, n = 1000, plot = TRUE)
+# Load fitted model and data (saved by 2-models.R)
+f2.m <- readRDS(file.path(PATH_MODELS, "sets 3", "f2.m_wetness.rds"))
+final.data <- readRDS(file.path(PATH_MODELS, "final_data.rds"))
+f3.no_sac <- readRDS(file.path(PATH_MODELS, "sets 3", "f3.no_sac.rds"))
+# Raw data for effect-plot axis ranges
+df <- read.csv(file.path(BASE_PATH, "250717_all_datasets.csv"))
+
+# Optional: compare with no-quadratic model if it exists
+# f2.m.no_quad <- readRDS(file.path(PATH_MODELS, "sets 2", "f2.wetness_noquad.rds"))
+# extractAIC(f2.m); extractAIC(f2.m.no_quad); simulateResiduals(f2.m.no_quad, n = 1000, plot = TRUE)
 
 summary(f2.m)
 
-path <- "E:/Spatial Analysis/_Supplementary Codebase/_Models"
-files <- list.files(path = path, full.names = TRUE)
-
-models <- lapply(files, readRDS)
-file_names <- tools::file_path_sans_ext(basename(files))
-names(models) <- file_names
-print(names(models))
-
-aic <- lapply(models, extractAIC)
-aic <- do.call(rbind, aic)
-aic <- as.data.frame(aic)
-aic$model <- rownames(aic) 
-rownames(aic) <- NULL
-
-ranked_aic <- aic[order(aic$AIC), ]
-
-# calculate delta AIC
-min <- ranked_aic$AIC[1]
-ranked_aic$delta_aic <- ranked_aic$AIC - min 
-
-print(ranked_aic) # f2.m performs best
+# AIC across all RDS in _Models (place model RDS files in PATH_MODELS for comparison)
+files <- list.files(path = PATH_MODELS, pattern = "\\.rds$", full.names = TRUE, recursive = TRUE)
+files <- setdiff(files, file.path(PATH_MODELS, "final_data.rds"))
+if (length(files) > 0L) {
+  models <- lapply(files, readRDS)
+  names(models) <- tools::file_path_sans_ext(basename(files))
+  aic <- do.call(rbind, lapply(models, extractAIC))
+  aic <- as.data.frame(aic)
+  aic$model <- rownames(aic)
+  rownames(aic) <- NULL
+  ranked_aic <- aic[order(aic$AIC), ]
+  ranked_aic$delta_aic <- ranked_aic$AIC - ranked_aic$AIC[1L]
+  print(ranked_aic)
+}
 
 # Check assumptions
-f2.m <- readRDS("E:/Spatial Analysis/_Supplementary Codebase/_Models/f2.m.rds")
 res <- simulateResiduals(f2.m, n = 1000)
 plot(res)
+# pseudoR2(f2.m)
 
-pseudoR2(f2.m) # 0.35 P.S. Not so important, only provide if reviewers asked! -spaMM authors
-
-# SAC
+# SAC correlogram
 nbc <- 75
-cor_f2 <- pgirmess::correlog(coords = final.data[,c("x", "y")],
+cor_f2 <- pgirmess::correlog(coords = final.data[, c("x", "y")],
                           z = residuals(f2.m),
                           method = "Moran", nbclass = nbc)
 cor_f2 <- as.data.frame(cor_f2)
 
 # compare with structured model
-cor_f3 <- pgirmess::correlog(coords = final.data[,c("x", "y")],
+cor_f3 <- pgirmess::correlog(coords = final.data[, c("x", "y")],
                              z = residuals(f3.no_sac),
                              method = "Moran", nbclass = nbc)
 cor_f3 <- as.data.frame(cor_f3)
@@ -83,13 +88,8 @@ correlogram <- ggplot(cor, aes(x = dist.class, y = coef, color = variable, shape
   theme_bw() +
   theme(legend.position = "bottom", legend.title.align = 0.5)
 
-ggsave("_Plots/correlogram-250721.jpeg",
-       correlogram,
-       jpeg,
-       width = 15,
-       height = 7,
-       units = "in",
-       dpi = 300)
+ggsave(file.path(PATH_PLOTS, "correlogram-250721.jpeg"),
+       correlogram, device = "jpeg", width = 15, height = 7, units = "in", dpi = 300)
 
 ### Inference
 # Odds Ratio and 95% Confidence Interval
@@ -188,13 +188,8 @@ odds.plot <-
   xlab('Odds Ratios')
 
 odds.plot
-ggsave('E:/Spatial Analysis/_Supplementary Codebase/_Plots/250720-odds_plot.jpeg',
-       odds.plot,
-       jpeg,
-       width = 15,
-       height = 16,
-       units = 'in',
-       dpi = 300)
+ggsave(file.path(PATH_PLOTS, "250720-odds_plot.jpeg"),
+       odds.plot, device = "jpeg", width = 15, height = 16, units = "in", dpi = 300)
 
 
 # ------------------------------------------------------------------------------
@@ -722,10 +717,5 @@ pred_plot <-
                pa_graph,
                nrow = 3)
 
-ggsave('E:/Spatial Analysis/_Supplementary Codebase/_Plots/250720-pred_plot.jpeg',
-       pred_plot,
-       jpeg,
-       width = 30,
-       height = 15,
-       units = 'in',
-       dpi = 300)
+ggsave(file.path(PATH_PLOTS, "250720-pred_plot.jpeg"),
+       pred_plot, device = "jpeg", width = 30, height = 15, units = "in", dpi = 300)

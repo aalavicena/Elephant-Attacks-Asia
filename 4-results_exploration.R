@@ -1,16 +1,24 @@
-#### Results Exploration
-setwd("/Volumes/MEC/Spatial Analysis/")
+# =============================================================================
+# 4. Results exploration
+# Distribution of points, risk proportions, baseline/projected comparisons.
+# Set BASE_PATH and paths below to your data locations.
+# =============================================================================
+
+BASE_PATH <- "/Volumes/MEC/Spatial Analysis"
+PATH_RESULTS <- file.path(BASE_PATH, "_Supplementary Codebase/_Results")
+PATH_VARS    <- file.path(BASE_PATH, "_Working Variables")
+PATH_BOUNDARY <- file.path(PATH_VARS, "Boundary/IUCN-redlist-100km-dissolved.shp")
 
 library(sf)
 library(terra)
 library(exactextractr)
+library(dplyr)
 
-####
 # Data
-df <- read.csv("250717_all_datasets.csv")
-ras <- rast("_Supplementary Codebase/_Results/baseline-250720.tif")
-elerange <- st_as_sf("E:/Spatial Analysis/_Working Variables/Boundary/IUCN-redlist-100km-dissolved.shp")
-elerange <- project(elerange, ras)
+df <- read.csv(file.path(BASE_PATH, "250717_all_datasets.csv"))
+ras <- rast(file.path(PATH_RESULTS, "baseline-250720.tif"))
+elerange <- st_as_sf(PATH_BOUNDARY)
+elerange <- st_transform(elerange, st_crs(ras))
 
 # Load polygons
 setwd("C:/Users/lenovo/OneDrive/Research/_PhD/2 - Wild Elephant Attacks on People/Data/GIS/National Boundaries")
@@ -148,6 +156,7 @@ risk.prop$total_area_at_risk <- rowSums(risk.prop[,2:5], na.rm = TRUE)
 # Percentages
 categories <- c("Low", "Moderate", "High", "Severe")
 
+risk.prop$total_area <- risk.prop$Extended_Buffer_Area
 for (cat in categories) {
   risk.prop[, paste0(cat, "_pct")] <- (risk.prop[, cat] / risk.prop$total_area) * 100
 }
@@ -178,9 +187,10 @@ rownames(b.countries) <- NULL
 
 risk.prop <- cbind(risk.prop, b.countries)
 risk.prop <- relocate(risk.prop, Extended_Buffer_Area, .before = Low)
-risk.prop$pct_at_risk <- 
+risk.prop$total_area <- risk.prop$Extended_Buffer_Area
+risk.prop$pct_at_risk <- (risk.prop$total_area_at_risk / risk.prop$total_area) * 100
 
-write.csv(risk.prop, "E:/Spatial Analysis/_Supplementary Codebase/_Results/baseline-risk-proportion.csv")
+write.csv(risk.prop, file.path(PATH_RESULTS, "baseline-risk-proportion.csv"))
 
 # 6. Baseline human population at risk
 path <- "/Volumes/MEC/Spatial Analysis/Datasets/WorldPop/counts_2015/"

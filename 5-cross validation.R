@@ -1,21 +1,23 @@
+# =============================================================================
+# 5. Cross-validation
+# Spatial cross-validation for the selected model. Run after 2-models.R
+# (sources final.data and formula) or load final.data from _Models/final_data.rds.
+# =============================================================================
+
+BASE_PATH <- "E:/Spatial Analysis"
+# If not run in same session as 2-models.R, load: final.data <- readRDS(file.path(BASE_PATH, "_Models", "final_data.rds"))
+
+library(spaMM)
 library(sperrorest)
 
-# Custom predict function 
 predict_spaMM <- function(object, newdata, ...) {
-  preds <- spaMM::predict(
-    object,
-    newdata = newdata,
-    re.form = NA,
-    type = "response"
-  )
-  return(as.vector(preds))
+  as.vector(spaMM::predict(object, newdata = newdata, re.form = NA, type = "response"))
 }
 
-# Formula
-model_formula <- att ~ ed + mesh + tri + wetness + hfp + popdens + gdp + dist_forest + dist_cropland + dist_fp + dist_pa + I(wetness^2) + I(dist_forest^2) + I(dist_cropland^2) + I(dist_fp^2) + I(dist_pa^2) + Matern(1|y+x)
-
-# Parallel processing
-nthr <- parallel::detectCores(logical = FALSE) - 1L
+model_formula <- att ~ ed + mesh + tri + wetness + hfp + popdens + gdp +
+  dist_forest + dist_cropland + dist_fp + dist_pa +
+  I(wetness^2) + I(dist_forest^2) + I(dist_cropland^2) + I(dist_fp^2) + I(dist_pa^2) +
+  Matern(1|y+x)
 
 # Cross-validation
 sp_cv <- sperrorest(
