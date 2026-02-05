@@ -1,6 +1,6 @@
 # Rising risk of elephant-caused human casualties in Tropical Asia
 
-Supplementary code for **Avicena et al.**, *Rising risk of elephant-caused human casualties in Tropical Asia*. Currently under review in *Communications Sustainability*. Preprint version of this paper is available at ResearchSquare: https://www.researchsquare.com/article/rs-8113717/v1
+Supplementary code for **Avicena et al.**, *Rising risk of elephant-caused human casualties in Tropical Asia*. Currently under review in *Communications Sustainability*. Preprint version of the paper is available at ResearchSquare: https://www.researchsquare.com/article/rs-8113717/v1
 
 This repository contains the R code used to build datasets, fit spatial models, perform model selection and inference, explore results, and run cross-validation for mapping elephant-induced human casualty risk in tropical Asia (2015–2050).
 
