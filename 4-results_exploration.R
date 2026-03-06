@@ -98,10 +98,10 @@ countries <- list(bgd,ind,mmr,slk,chn,tha,lao,mas_p,mas_s,ina,btn,cam,vnm,npl)
 
 
 # Categorise raster and polygonize to reduce commission error
-m <- c(-Inf, 0.4, 1,
-       0.41, 0.59, 2,
-       0.6, 0.79, 3,
-       0.8, Inf, 4)
+m <- c(-Inf, 0.2, 1,
+       0.2, 0.4, 2,
+       0.4, 0.6, 3,
+       0.6, Inf, 4)
 
 m <- matrix(m, ncol = 3, byrow = TRUE)
 
@@ -363,10 +363,10 @@ p5 <- crop(p5, elerange, mask = TRUE)
 pavg <- (p1 + p3 + p5) / 3
 
 r.avg <- (ssp1 + ssp3 + ssp5) / 3
-m <- c(-Inf, 0.4, 1,
-       0.41, 0.59, 2,
-       0.6, 0.79, 3,
-       0.8, Inf, 4)
+m <- c(-Inf, 0.2, 1,
+       0.2, 0.4, 2,
+       0.4, 0.6, 3,
+       0.6, Inf, 4)
 m <- matrix(m, ncol = 3, byrow = TRUE)
 r.avg <- classify(r.avg, m, others = NA)
 levels(r.avg) <- data.frame(ID = c(1, 2, 3, 4), 
