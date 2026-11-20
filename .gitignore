@@ -1,0 +1,14 @@
+# R session data
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Local data and model outputs — not distributed with the code
+_Working Variables/
+_Models/
+*.rds
+*.tif
+
+# macOS
+.DS_Store
